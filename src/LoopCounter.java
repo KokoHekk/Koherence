@@ -8,10 +8,13 @@ public final class LoopCounter
 
     // Current loop number
     private int loopCount;
+    private final DerbyManager derby;
 
     private LoopCounter()
     {
-        this.loopCount = 0;
+        this.derby = new DerbyManager();
+        derby.initializeDatabase();
+        this.loopCount = derby.readLoopCount();
     }
 
     public static LoopCounter getInstance()
@@ -27,6 +30,7 @@ public final class LoopCounter
     public void incrementLoop()
     {
         loopCount++;
+        derby.updateLoopCount(loopCount);
         System.out.println("\"It feels like I've been here before...\" (" + loopCount + ")");
     }
 

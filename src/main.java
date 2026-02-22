@@ -27,7 +27,7 @@ public class main
 
     private static void startGame()
     {
-        // This will hold the main game loop
+        // This will hold the main game loop*99*
         // Will read player input, move between rooms, update inventory, and whatever else
         logger.info("Game loop starting...");
 
