@@ -1,8 +1,10 @@
+import java.util.Objects;
+
 /**
  * Player class for PlayerActions
  */
 
-public class Player implements PlayerActions
+public class Player implements PlayerActions, Comparable<Player>
 {
     // Player name
     private String name;
@@ -44,5 +46,37 @@ public class Player implements PlayerActions
     public String getStatus()
     {
         return name + " is in the " + currentRoom;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * Natural ordering for Player.
+     * Sorts players by name A–Z.
+     *
+     * compareTo() defines the "default" sort order.
+     * Sets use this when there is no Comparator given.
+     */
+    @Override
+    public int compareTo(Player other)
+    {
+        return this.name.compareToIgnoreCase(other.name);
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (!(o instanceof Player player)) return false;
+        return Objects.equals(name, player.name);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(name);
     }
 }

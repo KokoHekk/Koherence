@@ -18,7 +18,8 @@ public class DerbyManager
         try (Connection conn = DriverManager.getConnection(DB_URL);
              Statement stmt = conn.createStatement()) {
 
-            if (!settingsTableExists(conn)) {
+            if (!settingsTableExists(conn))
+            {
                 stmt.executeUpdate(
                         "CREATE TABLE GAME_SETTINGS (" +
                                 "ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, " +
@@ -31,13 +32,15 @@ public class DerbyManager
                 );
             }
 
-        } catch (SQLException e) {
+        } catch (SQLException e)
+        {
             e.printStackTrace();
         }
     }
 
     // Updates the stored loop count for the first settings row.
-    public void updateLoopCount(int newLoopCount) {
+    public void updateLoopCount(int newLoopCount)
+    {
         String sql = "UPDATE GAME_SETTINGS SET LOOP_COUNT = ? WHERE ID = 1";
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
@@ -52,25 +55,30 @@ public class DerbyManager
     }
 
     // Reads the current loop count from the database.
-    public int readLoopCount() {
+    public int readLoopCount()
+    {
         String sql = "SELECT LOOP_COUNT FROM GAME_SETTINGS WHERE ID = 1";
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+             ResultSet rs = ps.executeQuery())
+        {
 
-            if (rs.next()) {
+            if (rs.next())
+            {
                 return rs.getInt("LOOP_COUNT");
             }
 
-        } catch (SQLException e) {
+        } catch (SQLException e)
+        {
             e.printStackTrace();
         }
         return 0;
     }
 
     // Checks whether the GAME_SETTINGS table exists.
-    private boolean settingsTableExists(Connection conn) throws SQLException {
+    private boolean settingsTableExists(Connection conn) throws SQLException
+    {
         try (ResultSet rs = conn.getMetaData()
                 .getTables(null, null, "GAME_SETTINGS", null)) {
             return rs.next();
