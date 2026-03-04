@@ -31,7 +31,7 @@ public final class LoopCounter
     {
         loopCount++;
         derby.updateLoopCount(loopCount);
-        System.out.println("\"It feels like I've been here before...\" (" + loopCount + ")");
+        System.out.println("\n\"It feels like I've been here before...\" (" + loopCount + ")");
     }
 
     /*

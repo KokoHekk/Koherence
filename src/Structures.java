@@ -44,6 +44,8 @@ class LoopRoom extends BaseRoom implements Interactive
     @Override
     public void interact(Player player)
     {
-        System.out.println("========\n*The world around you fades to black...*\n========\n" + player.getStatus());
+        System.out.println("========\n*Your vision fades to black...*\n========\n" + player.getStatus());
     }
 }
+
+// The world around you fades to black...

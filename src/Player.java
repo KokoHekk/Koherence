@@ -27,7 +27,7 @@ public class Player implements PlayerActions, Comparable<Player>
     @Override
     public void look()
     {
-        System.out.println(name + " looks around " + currentRoom);
+        System.out.println(name + " looks around the " + currentRoom);
     }
 
     @Override
