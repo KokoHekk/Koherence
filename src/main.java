@@ -1,106 +1,111 @@
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import java.io.*;
+import java.util.Scanner;
 
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.TreeSet;
+public class main {
+    public static final Logger logger = LogManager.getLogger(main.class);
+    private static final String SAVE_FILE = "koherence_save.dat";
 
-public class main
-{
-    private static final Logger logger = LogManager.getLogger(main.class);
+    public static class GameState implements Serializable {
+        String koName = "Ko"; // I know this isn't used, I meant to fix it but ran out of time
+        String currentRoom = "Bedroom"; // I know this isn't used, I meant to fix it but ran out of time
+        boolean hasGameBoy = false;
+        boolean hasKey = false;
+        boolean foundStudy = false;
+        boolean badEndingReached = false;
+        boolean hasGem = false;
+        boolean[] dayCompleted = new boolean[8]; // I know this isn't used, I meant to fix it but ran out of time;
+        int currentDay = 0;
+        int withCaretakerScore = 0;
+        int againstCaretakerScore = 0;
+        int shelfCleanedResets = 0;
+        boolean wasResetThisTurn = false;
+    }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         logger.info("====Koherence====");
-
-        try
-        {
-            // Something that could fail
-            startGame();
-//            sorting();
-        }
-        catch (Exception e)
-        {
-            // Error handling
-            logger.error("An unexpected error occurred", e);
-        }
-        finally
-        {
-            logger.info("Shutting down. Thanks for playing!");
+        try {
+            runMenu(new Scanner(System.in));
+        } catch (Exception e) {
+            logger.error("Error", e);
+        } finally {
+            logger.info("Shutdown.");
         }
     }
 
-    private static void startGame()
-    {
-        // This will hold the main game loop
-        // Will read player input, move between rooms, update inventory, and whatever else
-        logger.info("Game starting...");
+    private static void runMenu(Scanner scanner) {
+        while (true) {
+            System.out.println(VerbParser.getMessage("ascii_title")); // I know this looks bad, I just generated something for it just to make it look like a menu.
+            boolean saveExists = new File(SAVE_FILE).exists();
 
-        // Testing for the new classes
-        Player player = new Player("Koko", "Lounging Room");
-        player.look();
+            System.out.println(VerbParser.getMessage("menu.start"));
+            if (saveExists) System.out.println(VerbParser.getMessage("menu.continue"));
+            System.out.println(VerbParser.getMessage("menu.reset"));
+            System.out.println(VerbParser.getMessage("menu.quit"));
+            System.out.print(VerbParser.getMessage("menu.prompt"));
 
-        LoopRoom room = new LoopRoom("Lounging Room", "Everything feels familiar...");
-        room.interact(player);
-
-//        LoopCounter.getInstance().incrementLoop();
-
-        Functions.runFunctionalDemo();
+            String choice = scanner.nextLine().trim().toLowerCase();
+            if (choice.equals("1") || choice.equals("start")) {
+                if (saveExists) {
+                    System.out.println(VerbParser.getMessage("menu.save_exists"));
+                    continue;
+                }
+                GameState state = new GameState();
+                startGameLoop(scanner, state);
+            } else if ((choice.equals("2") || choice.equals("continue")) && saveExists) {
+                GameState state = loadGameState();
+                startGameLoop(scanner, state);
+            } else if (choice.equals("3") || choice.equals("reset")) {
+                handleFullReset(scanner);
+            } else if (choice.equals("4") || choice.equals("quit")) {
+                break;
+            }
+        }
     }
 
-    /**
-     * Examples that show the use of a Set and a Map when sorting objects.
-     *
-     * - TreeSet uses Player.compareTo() (Comparable) for natural ordering.
-     * - Another TreeSet uses PlayerScore.BY_SCORE_DESC (Comparator) for custom ordering.
-     * - TreeMap sorts entries by key.
-     */
-//    private static void sorting()
-//    {
-//        // TreeSet with Comparable (Player)
-//        TreeSet<Player> playersByName = new TreeSet<>();
-//        playersByName.add(new Player("Mira", "Hallway"));
-//        playersByName.add(new Player("Rumi", "Kitchen"));
-//        playersByName.add(new Player("Zoe", "Library"));
-//
-//        System.out.println("\nPlayers sorted by name (TreeSet + Comparable):");
-//        for (Player p : playersByName)
-//        {
-//            System.out.println(" - " + p.getName());
-//        }
-//
-//        // TreeSet with Comparator (PlayerScore)
-//        TreeSet<PlayerProgress> progressByValue = new TreeSet<>(PlayerProgress.BY_PROGRESS_DESC);
-//        progressByValue.add(new PlayerProgress("Mira", 5));
-//        progressByValue.add(new PlayerProgress("Rumi", 12));
-//        progressByValue.add(new PlayerProgress("Zoe", 8));
-//
-//        System.out.println("\nScores sorted by value (TreeSet + Comparator):");
-//        for (PlayerProgress pp : progressByValue)
-//        {
-//            System.out.println(" - " + pp.playerName() + ": " + pp.progress());
-//        }
-//
-//        // TreeMap (Map sorted by key)
-//        TreeMap<Integer, Player> turnOrder = new TreeMap<>();
-//        turnOrder.put(3, new Player("Mira", "Hallway"));
-//        turnOrder.put(1, new Player("Rumi", "Kitchen"));
-//        turnOrder.put(2, new Player("Zoe", "Library"));
-//
-//        System.out.println("\nTurn order sorted by key (TreeMap):");
-//        for (Map.Entry<Integer, Player> entry : turnOrder.entrySet())
-//        {
-//            System.out.println("Turn " + entry.getKey() + " -> " + entry.getValue().getName());
-//        }
-//
-//        /*
-//         * NOTES:
-//         * - TreeSet keeps elements unique and sorted.
-//         *   This uses Comparable by default, or the Comparator provide.
-//         * - TreeMap keeps key/value pairs sorted by key.
-//         * - Comparable vs Comparator:
-//         *   Comparable (compareTo) - one natural ordering, defined in the class.
-//         *   Comparator (compare)   = external/custom ordering, can have many strategies.
-//         */
-//    }
+    private static void startGameLoop(Scanner scanner, GameState state) {
+        logger.info("Day " + state.currentDay + " starting");
+
+        while (!state.badEndingReached && state.currentDay < 8) {
+            Lore.runDay(scanner, state);
+        }
+
+        if (state.currentDay >= 8) {
+            triggerBadEnding(scanner, state);
+        }
+    }
+
+
+    public static void saveGameState(GameState state) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(SAVE_FILE))) {
+            oos.writeObject(state);
+        } catch (IOException e) {
+            logger.error("Save failed", e);
+        }
+    }
+
+    public static GameState loadGameState() {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(SAVE_FILE))) {
+            return (GameState) ois.readObject();
+        } catch (Exception e) {
+            logger.error("Load failed", e);
+            return null;
+        }
+    }
+
+    private static void handleFullReset(Scanner scanner) {
+        System.out.println(VerbParser.getMessage("reset.confirm"));
+        if (scanner.nextLine().trim().equalsIgnoreCase("Okay")) {
+            new File(SAVE_FILE).delete();
+            ResetCounter.getInstance().clearResets();
+            System.out.println(VerbParser.getMessage("reset.success"));
+        }
+    }
+
+    private static void triggerBadEnding(Scanner scanner, GameState state) {
+        System.out.println(VerbParser.getMessage("bad_ending.title"));
+        int resets = ResetCounter.getInstance().getResetCount();
+        System.out.println(VerbParser.getMessage("bad_ending.resets") + resets);
+    }
 }

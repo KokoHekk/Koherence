@@ -13,7 +13,6 @@ public class DerbyManager
 {
     private static final String DB_URL = "jdbc:derby:koherenceDB;create=true";
 
-    //  Initializes the database by creating a table and inserting a default row.
     public void initializeDatabase() {
         try (Connection conn = DriverManager.getConnection(DB_URL);
              Statement stmt = conn.createStatement()) {
@@ -38,7 +37,6 @@ public class DerbyManager
         }
     }
 
-    // Updates the stored loop count for the first settings row.
     public void updateLoopCount(int newLoopCount)
     {
         String sql = "UPDATE GAME_SETTINGS SET LOOP_COUNT = ? WHERE ID = 1";
@@ -54,7 +52,6 @@ public class DerbyManager
         }
     }
 
-    // Reads the current loop count from the database.
     public int readLoopCount()
     {
         String sql = "SELECT LOOP_COUNT FROM GAME_SETTINGS WHERE ID = 1";
@@ -76,7 +73,6 @@ public class DerbyManager
         return 0;
     }
 
-    // Checks whether the GAME_SETTINGS table exists.
     private boolean settingsTableExists(Connection conn) throws SQLException
     {
         try (ResultSet rs = conn.getMetaData()
